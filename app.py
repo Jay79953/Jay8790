@@ -14,7 +14,14 @@ SENDER_PASS = "xjrd wlzn biez bgjl"  # Use App Passwords
 
 # === Google Sheets Setup ===
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+
+# ✅ Read service account JSON from environment variable GOOGLE_CREDS
+creds_json = os.environ.get("GOOGLE_CREDS")
+if not creds_json:
+    raise ValueError("❌ GOOGLE_CREDS environment variable is missing!")
+
+creds_dict = json.loads(creds_json)
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open("Users").sheet1
 
@@ -100,6 +107,7 @@ def login():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Render provides this
     app.run(host='0.0.0.0', port=port)
+
 
 
 
