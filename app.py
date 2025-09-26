@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_file
 import random
-import json 
+import json
 import smtplib
 from email.mime.text import MIMEText
 import gspread
@@ -22,13 +22,17 @@ if not creds_json:
     raise ValueError("❌ GOOGLE_CREDS environment variable is missing!")
 
 creds_dict = json.loads(creds_json)
+
+# 🔹 Fix escaped newlines in private key
+creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 sheet = client.open("Users").sheet1
 
 # === OTP Store === (Temporary dict for testing)
 otp_store = {}
-from flask import send_file
+
 @app.route('/')
 def index():
     return send_file("index.html")
@@ -92,7 +96,6 @@ def register():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
 
-
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -108,8 +111,3 @@ def login():
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Render provides this
     app.run(host='0.0.0.0', port=port)
-
-
-
-
-
